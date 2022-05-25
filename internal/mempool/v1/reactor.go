@@ -162,7 +162,7 @@ func (r *Reactor) OnStop() {
 // empty set of txs are sent in an envelope or if we receive an unexpected
 // message type.
 func (r *Reactor) handleMempoolMessage(envelope p2p.Envelope) error {
-	logger := r.Logger.With("peer", envelope.From)
+	// logger := r.Logger.With("peer", envelope.From)
 
 	switch msg := envelope.Message.(type) {
 	case *protomem.Txs:
@@ -177,9 +177,10 @@ func (r *Reactor) handleMempoolMessage(envelope p2p.Envelope) error {
 		}
 
 		for _, tx := range protoTxs {
-			if err := r.mempool.CheckTx(context.Background(), types.Tx(tx), nil, txInfo); err != nil {
-				logger.Error("checktx failed for tx", "tx", fmt.Sprintf("%X", types.Tx(tx).Hash()), "err", err)
-			}
+			r.mempool.CheckTx(context.Background(), types.Tx(tx), nil, txInfo)
+			// if err := r.mempool.CheckTx(context.Background(), types.Tx(tx), nil, txInfo); err != nil {
+			// 	logger.Error("checktx failed for tx", "tx", fmt.Sprintf("%X", types.Tx(tx).Hash()), "err", err)
+			// }
 		}
 
 	default:
