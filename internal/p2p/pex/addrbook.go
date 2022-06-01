@@ -424,6 +424,10 @@ func (a *addrBook) GetSelection() []*p2p.NetAddress {
 		allAddr[i], allAddr[j] = allAddr[j], allAddr[i]
 	}
 
+	if numAddresses >= int(maxAddresses) {
+		numAddresses = int(maxAddresses)
+	}
+
 	// slice off the limit we are willing to share.
 	return allAddr[:numAddresses]
 }
@@ -469,6 +473,10 @@ func (a *addrBook) GetSelectionWithBias(biasTowardsNewAddrs int) []*p2p.NetAddre
 	numRequiredNewAdd := tmmath.MaxInt(percentageOfNum(biasTowardsNewAddrs, numAddresses), numAddresses-a.nOld)
 	selection := a.randomPickAddresses(bucketTypeNew, numRequiredNewAdd)
 	selection = append(selection, a.randomPickAddresses(bucketTypeOld, numAddresses-len(selection))...)
+
+	if len(selection) >= int(maxAddresses) {
+		selection = selection[:maxAddressSize]
+	}
 	return selection
 }
 
