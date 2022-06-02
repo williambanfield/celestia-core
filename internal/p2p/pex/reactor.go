@@ -221,9 +221,9 @@ func (r *ReactorV2) handlePexMessage(envelope p2p.Envelope) error {
 		}
 
 		// check the size of the response
-		if len(msg.Addresses) > int(maxAddresses) {
+		if len(msg.Addresses) > int(400) {
 			return fmt.Errorf("peer sent too many addresses (max: %d, got: %d)",
-				maxAddresses,
+				400,
 				len(msg.Addresses),
 			)
 		}
