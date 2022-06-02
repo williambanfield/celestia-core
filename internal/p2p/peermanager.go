@@ -183,13 +183,13 @@ func (o *PeerManagerOptions) Validate() error {
 			len(o.PersistentPeers), o.MaxConnected)
 	}
 
-	if o.MaxPeers > 0 {
-		if o.MaxConnected == 0 || o.MaxConnected+o.MaxConnectedUpgrade > o.MaxPeers {
-			return fmt.Errorf(
-				"MaxConnected %v and MaxConnectedUpgrade %v can't exceed MaxPeers %v",
-				o.MaxConnected, o.MaxConnectedUpgrade, o.MaxPeers)
-		}
-	}
+	// if o.MaxPeers > 0 {
+	// 	if o.MaxConnected == 0 || o.MaxConnected+o.MaxConnectedUpgrade > o.MaxPeers {
+	// 		return fmt.Errorf(
+	// 			"MaxConnected %v and MaxConnectedUpgrade %v can't exceed MaxPeers %v",
+	// 			o.MaxConnected, o.MaxConnectedUpgrade, o.MaxPeers)
+	// 	}
+	// }
 
 	if o.MaxRetryTime > 0 {
 		if o.MinRetryTime == 0 {
@@ -356,7 +356,7 @@ func (m *PeerManager) configurePeers() error {
 	}
 	for id := range configure {
 		if peer, ok := m.store.Get(id); ok {
-			if err := m.store.Set(m.configurePeer(peer)); err != nil {
+			if err := m.store.Set("configure", m.configurePeer(peer)); err != nil {
 				return err
 			}
 		}
@@ -383,6 +383,7 @@ func (m *PeerManager) newPeerInfo(id types.NodeID) peerInfo {
 // prunePeers removes low-scored peers from the peer store if it contains more
 // than MaxPeers peers. The caller must hold the mutex lock.
 func (m *PeerManager) prunePeers() error {
+	fmt.Println("pruning peers __________ total:", m.store.Size(), m.options.MaxPeers)
 	if m.options.MaxPeers == 0 || m.store.Size() <= int(m.options.MaxPeers) {
 		return nil
 	}
@@ -430,7 +431,7 @@ func (m *PeerManager) Add(address NodeAddress) (bool, error) {
 
 	// else add the new address
 	peer.AddressInfo[address] = &peerAddressInfo{Address: address}
-	if err := m.store.Set(peer); err != nil {
+	if err := m.store.Set("adding", peer); err != nil {
 		return false, err
 	}
 	if err := m.prunePeers(); err != nil {
@@ -549,7 +550,7 @@ func (m *PeerManager) DialFailed(address NodeAddress) error {
 
 	addressInfo.LastDialFailure = time.Now().UTC()
 	addressInfo.DialFailures++
-	if err := m.store.Set(peer); err != nil {
+	if err := m.store.Set("dial failed", peer); err != nil {
 		return err
 	}
 
@@ -618,7 +619,7 @@ func (m *PeerManager) Dialed(address NodeAddress) error {
 		// If not found, assume address has been removed.
 	}
 
-	if err := m.store.Set(peer); err != nil {
+	if err := m.store.Set("dialed", peer); err != nil {
 		return err
 	}
 
@@ -693,7 +694,7 @@ func (m *PeerManager) Accepted(peerID types.NodeID) error {
 	}
 
 	peer.LastConnected = time.Now().UTC()
-	if err := m.store.Set(peer); err != nil {
+	if err := m.store.Set("accepted", peer); err != nil {
 		return err
 	}
 
@@ -1128,7 +1129,8 @@ func (s *peerStore) Get(id types.NodeID) (peerInfo, bool) {
 
 // Set stores peer data. The input data will be copied, and can safely be reused
 // by the caller.
-func (s *peerStore) Set(peer peerInfo) error {
+func (s *peerStore) Set(w string, peer peerInfo) error {
+	fmt.Println("setting peer", w, peer)
 	if err := peer.Validate(); err != nil {
 		return err
 	}
@@ -1160,7 +1162,9 @@ func (s *peerStore) Set(peer peerInfo) error {
 
 // Delete deletes a peer, or does nothing if it does not exist.
 func (s *peerStore) Delete(id types.NodeID) error {
+	fmt.Println("deleting peer !!!!!", id.AddressString(""))
 	if _, ok := s.peers[id]; !ok {
+		fmt.Println("no peer found")
 		return nil
 	}
 	if err := s.db.Delete(keyPeerInfo(id)); err != nil {
@@ -1168,6 +1172,7 @@ func (s *peerStore) Delete(id types.NodeID) error {
 	}
 	delete(s.peers, id)
 	s.ranked = nil
+	fmt.Println(s.Size())
 	return nil
 }
 

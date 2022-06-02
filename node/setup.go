@@ -496,7 +496,7 @@ func createPeerManager(
 		SelfAddress:            selfAddr,
 		MaxConnected:           maxConns,
 		MaxConnectedUpgrade:    4,
-		MaxPeers:               1000,
+		MaxPeers:               cfg.P2P.MaxConnections,
 		MinRetryTime:           250 * time.Millisecond,
 		MaxRetryTime:           30 * time.Minute,
 		MaxRetryTimePersistent: 5 * time.Minute,
