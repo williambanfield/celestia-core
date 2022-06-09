@@ -374,8 +374,9 @@ func (m *PeerManager) configurePeer(peer peerInfo) peerInfo {
 // newPeerInfo creates a peerInfo for a new peer.
 func (m *PeerManager) newPeerInfo(id types.NodeID) peerInfo {
 	peerInfo := peerInfo{
-		ID:          id,
-		AddressInfo: map[NodeAddress]*peerAddressInfo{},
+		ID:           id,
+		AddressInfo:  map[NodeAddress]*peerAddressInfo{},
+		MutableScore: 1,
 	}
 	return m.configurePeer(peerInfo)
 }
