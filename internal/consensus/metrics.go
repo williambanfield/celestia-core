@@ -97,6 +97,9 @@ type Metrics struct {
 	// timestamp and the timestamp of the latest prevote in a round where 100%
 	// of the voting power on the network issued prevotes.
 	FullPrevoteMessageDelay metrics.Gauge
+
+	// Hacked in metric to track how frequently we receive no proposal at all.
+	ProposalTimeout metrics.Counter
 }
 
 // PrometheusMetrics returns Metrics build using Prometheus client library.
@@ -265,6 +268,12 @@ func PrometheusMetrics(namespace string, labelsAndValues ...string) *Metrics {
 			Help: "Difference in seconds between the proposal timestamp and the timestamp " +
 				"of the latest prevote that achieved 100% of the voting power in the prevote step.",
 		}, labels).With(labelsAndValues...),
+		ProposalTimeout: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: MetricsSubsystem,
+			Name:      "proposal_timeout",
+			Help:      "Number of proposals that timed out",
+		}, labels).With(labelsAndValues...),
 	}
 }
 
@@ -301,6 +310,7 @@ func NopMetrics() *Metrics {
 		BlockGossipPartsReceived:  discard.NewCounter(),
 		QuorumPrevoteMessageDelay: discard.NewGauge(),
 		FullPrevoteMessageDelay:   discard.NewGauge(),
+		ProposalTimeout:           discard.NewCounter(),
 	}
 }
 
