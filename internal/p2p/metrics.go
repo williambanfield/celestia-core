@@ -140,14 +140,14 @@ func PrometheusMetrics(namespace string, labelsAndValues ...string) *Metrics {
 			Subsystem: MetricsSubsystem,
 			Name:      "connect_successes",
 			Help:      "Number of successful peer connections established",
-		}, append(labels, "ch_id")).With(labelsAndValues...),
+		}, labels).With(labelsAndValues...),
 
 		ConnectFailures: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
 			Namespace: namespace,
 			Subsystem: MetricsSubsystem,
 			Name:      "connect_failures",
 			Help:      "Number of failed peer connections",
-		}, append(labels, "ch_id")).With(labelsAndValues...),
+		}, labels).With(labelsAndValues...),
 
 		mtx:               &sync.RWMutex{},
 		messageLabelNames: map[reflect.Type]string{},
