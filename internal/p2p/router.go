@@ -718,6 +718,7 @@ func (r *Router) connectPeer(ctx context.Context, address NodeAddress) {
 	case errors.Is(err, context.Canceled):
 		return
 	case err != nil:
+		r.metrics.ConnectFailures.Add(1)
 		r.logger.Error("failed to dial peer", "peer", address, "err", err)
 		if err = r.peerManager.DialFailed(address); err != nil {
 			r.logger.Error("failed to report dial failure", "peer", address, "err", err)
@@ -731,6 +732,7 @@ func (r *Router) connectPeer(ctx context.Context, address NodeAddress) {
 		conn.Close()
 		return
 	case err != nil:
+		r.metrics.ConnectFailures.Add(1)
 		r.logger.Error("failed to handshake with peer", "peer", address, "err", err)
 		if err = r.peerManager.DialFailed(address); err != nil {
 			r.logger.Error("failed to report dial failure", "peer", address, "err", err)
@@ -746,6 +748,7 @@ func (r *Router) connectPeer(ctx context.Context, address NodeAddress) {
 		return
 	}
 
+	r.metrics.ConnectSuccesses.Add(1)
 	// routePeer (also) calls connection close
 	go r.routePeer(address.NodeID, conn, toChannelIDs(peerInfo.Channels))
 }

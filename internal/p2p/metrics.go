@@ -56,6 +56,9 @@ type Metrics struct {
 	// queue for a specific flow (i.e. Channel).
 	PeerQueueMsgSize metrics.Gauge
 
+	ConnectSuccesses metrics.Counter
+	ConnectFailures  metrics.Counter
+
 	mtx               *sync.RWMutex
 	messageLabelNames map[reflect.Type]string
 }
@@ -132,6 +135,20 @@ func PrometheusMetrics(namespace string, labelsAndValues ...string) *Metrics {
 			Help:      "The size of messages sent over a peer's queue for a specific p2p Channel.",
 		}, append(labels, "ch_id")).With(labelsAndValues...),
 
+		ConnectSuccesses: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: MetricsSubsystem,
+			Name:      "connect_successes",
+			Help:      "Number of successful peer connections established",
+		}, append(labels, "ch_id")).With(labelsAndValues...),
+
+		ConnectFailures: prometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: MetricsSubsystem,
+			Name:      "connect_failures",
+			Help:      "Number of failed peer connections",
+		}, append(labels, "ch_id")).With(labelsAndValues...),
+
 		mtx:               &sync.RWMutex{},
 		messageLabelNames: map[reflect.Type]string{},
 	}
@@ -150,6 +167,8 @@ func NopMetrics() *Metrics {
 		PeerQueueDroppedMsgs:   discard.NewCounter(),
 		PeerQueueMsgSize:       discard.NewGauge(),
 		mtx:                    &sync.RWMutex{},
+		ConnectFailures:        discard.NewCounter(),
+		ConnectSuccesses:       discard.NewCounter(),
 		messageLabelNames:      map[reflect.Type]string{},
 	}
 }
