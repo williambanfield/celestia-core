@@ -978,6 +978,7 @@ func (cs *State) handleTimeout(ti timeoutInfo, rs cstypes.RoundState) {
 		if err := cs.eventBus.PublishEventTimeoutPropose(cs.RoundStateEvent()); err != nil {
 			cs.Logger.Error("failed publishing timeout propose", "err", err)
 		}
+		cs.metrics.ProposalTimeout.Add(1)
 
 		cs.enterPrevote(ti.Height, ti.Round)
 
