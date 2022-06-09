@@ -22,7 +22,7 @@ import (
 const (
 	// wait a random amount of time from this interval
 	// before dialing peers or reconnecting to help prevent DoS
-	dialRandomizerIntervalMilliseconds = 3000
+	dialRandomizerIntervalMilliseconds = 300
 
 	// repeatedly try to reconnect for a few minutes
 	// ie. 5 * 20 = 100s
